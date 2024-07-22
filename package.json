@@ -7,11 +7,10 @@
     "start": "node app2.js"
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "@supabase/supabase-js": "^2.44.4",
+    "express": "^4.19.2",
+    "http": "^0.0.1-security",
     "serialport": "^9.0.3",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.0.4",
+    "@supabase/supabase-js": "^2.44.4"
   },
-  "author": "",
-  "license": "ISC"
 }
