@@ -1,59 +1,50 @@
-const express = require("express");
-const http = require("http");
-const { createClient } = require("@supabase/supabase-js");
-const socketIo = require("socket.io");
+const express = require('express');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const SerialPort = require('serialport');
+const { createClient } = require('@supabase/supabase-js');
+const socketIo = require('socket.io');
 
-// Supabase configuration
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_URL = 'https://jmjkclbiybinmgvsnxgw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptamtjbGJpeWJpbm1ndnNueGd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMxNDUyNjAsImV4cCI6MjAyODcyMTI2MH0.ZJ62pYIZuvJJn_EBAxeLrBxPjAAjdWU-Ah4ccHMn1nw';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const app = express();
-app.use(express.json());
-
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+const port = new SerialPort("/dev/cu.usbmodem3485187ABEC42", {
+  baudRate: 57600,
+  dataBits: 8,
+  parity: "none",
+  stopBits: 1,
+  flowControl: false,
 });
 
-app.post("/sensor-data", async (req, res) => {
-  const { data } = req.body;
-  console.log(`Received data: ${data}`);
-
-  // Insert data into Supabase
-  const { error } = await supabase.from("sensor_data").insert([{ data }]);
-
-  if (error) {
-    console.error("Error inserting data:", error.message);
-    res.status(500).send("Error inserting data");
-    return;
-  }
-
-  // Broadcast data to connected clients
-  io.emit("data", data);
-  res.status(200).send("Data received");
+port.on("error", function (err) {
+  console.error("Error: ", err.message);
 });
 
-io.on("connection", (socket) => {
+const parser = port.pipe(new SerialPort.parsers.Readline({ delimiter: "\r\n" }));
+
+io.on("connection", function (socket) {
   console.log("Client connected");
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", function () {
     console.log("Client disconnected");
   });
 });
 
-// Real-time subscription setup
-const subscription = supabase
-  .from("sensor_data")
-  .on("*", (payload) => {
-    console.log("Change received!", payload);
-    io.emit("data", payload.new.data);
-  })
-  .subscribe();
+parser.on("data", function (data) {
+  console.log(data);
+  io.emit("data", parseFloat(data));
+});
 
-const port = process.env.PORT || 3002;
-server.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+const portNumber = process.env.PORT || 3002;
+server.listen(portNumber, function () {
+  console.log(`Server listening on port ${portNumber}`);
 });
