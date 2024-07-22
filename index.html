@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js'></script>
+    <script>
+      var socket = io('http://localhost:3002');
+
+  socket.on('data', function(data) {
+      console.log(data);
+      var message = '';
+      if (data >= 10.0 && data <= 90.0) {
+      message = "Low Stock";
+      } else if (data >= 500.0) {
+      message = "Stocked";
+      } else {
+      message = "Empty";
+      }
+      document.getElementById('reading').innerHTML = message;
+  });
+    
+    </script>
+
+    <style>
+      body {
+        font-family: 'Times New Roman', sans-serif;
+        background-color: #FFC0CB; 
+        font-size: 30px;
+      }
+      
+      h1 {
+        color: #333;
+        font-size: 40px;
+        text-align: left;
+      }
+
+      #reading {
+        font-size: 30px; 
+        font-weight: bold; 
+        color: #555;
+      }
+      
+      .stock-container {
+        text-align: left; 
+        margin-top: 30px;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <h1>Bathroom Stock</h1>
+    <div>Tampon stock is currently: <span id="reading"></span></div>
+
+  </body>
+</html>
