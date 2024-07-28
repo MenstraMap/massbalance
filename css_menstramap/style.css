@@ -1,0 +1,22 @@
+body {
+  font-family: 'Times New Roman', sans-serif;
+  background: red;
+  font-size: 30px;
+}
+
+h1 {
+  color: #333;
+  font-size: 40px;
+  text-align: left;
+}
+
+#reading {
+  font-size: 30px;
+  font-weight: bold;
+  color: #555;
+}
+
+.stock-container {
+  text-align: left;
+  margin-top: 30px;
+}
